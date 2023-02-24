@@ -1,0 +1,4 @@
+{
+  "extends": ["github>FitburnEngineering/renovate-config"],
+  "baseBranches": ["dev"]
+}
