@@ -2,3 +2,6 @@
 /artifacts
 /cache
 /dist
+
+/coverage
+coverage.json

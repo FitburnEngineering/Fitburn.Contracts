@@ -1,16 +1,18 @@
 import { expect } from "chai";
-import { time } from "@openzeppelin/test-helpers";
 import { ethers, web3 } from "hardhat";
+import { time } from "@openzeppelin/test-helpers";
 
-import { deployERC20, deployVesting } from "./fixture";
+import { deployVesting } from "./fixture";
 import { amount } from "../../../constants";
+import { deployERC20 } from "../../../ERC20/shared/fixtures";
 
 const span = 86400; // one day in seconds
 
 export async function calc(name: string, percent: number, months: number) {
   const [owner] = await ethers.getSigners();
   const vestingInstance = await deployVesting(name);
-  const erc20Instance = await deployERC20(vestingInstance);
+  const erc20Instance = await deployERC20(void 0, { amount });
+  await erc20Instance.mint(vestingInstance.address, amount);
 
   const dailyRelease = (amount * percent) / 10000000;
   const cliff = new Array(months * 30).fill(0);

@@ -1,25 +1,24 @@
 import { expect } from "chai";
 import { ethers, network } from "hardhat";
-import { Contract, constants } from "ethers";
+import { Contract } from "ethers";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 import { MINTER_ROLE } from "@gemunion/contracts-constants";
 
-import { LinkToken, VRFCoordinatorMock } from "../../../../typechain-types";
+import { VRFCoordinatorMock } from "../../../../typechain-types";
 import { deployLinkVrfFixture } from "../../../shared/link";
-import { templateId } from "../../../constants";
+import { subscriptionId, templateId } from "../../../constants";
 import { randomRequest } from "../../../shared/randomRequest";
 
 export function shouldMintRandom(factory: () => Promise<Contract>) {
   describe("mintRandom", function () {
-    let linkInstance: LinkToken;
     let vrfInstance: VRFCoordinatorMock;
 
     before(async function () {
       await network.provider.send("hardhat_reset");
 
       // https://github.com/NomicFoundation/hardhat/issues/2980
-      ({ linkInstance, vrfInstance } = await loadFixture(function shouldMintRandom() {
+      ({ vrfInstance } = await loadFixture(function shouldMintRandom() {
         return deployLinkVrfFixture();
       }));
     });
@@ -28,7 +27,7 @@ export function shouldMintRandom(factory: () => Promise<Contract>) {
       const [_owner, receiver] = await ethers.getSigners();
       const contractInstance = await factory();
 
-      await linkInstance.transfer(contractInstance.address, constants.WeiPerEther);
+      await vrfInstance.addConsumer(subscriptionId, contractInstance.address);
 
       await contractInstance.mintRandom(receiver.address, templateId);
 
@@ -53,8 +52,6 @@ export function shouldMintRandom(factory: () => Promise<Contract>) {
     it("should fail: TemplateZero", async function () {
       const [_owner, receiver] = await ethers.getSigners();
       const contractInstance = await factory();
-
-      await linkInstance.transfer(contractInstance.address, constants.WeiPerEther);
 
       const tx = contractInstance.mintRandom(receiver.address, 0);
       await expect(tx).to.be.revertedWith("TemplateZero");

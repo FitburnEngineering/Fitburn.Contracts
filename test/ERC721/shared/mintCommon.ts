@@ -9,7 +9,7 @@ import { templateId, tokenId } from "../../constants";
 
 export function shouldMintCommon(factory: () => Promise<Contract>) {
   describe("mintCommon", function () {
-    it("should mint to wallet", async function () {
+    it("should mint to EOA", async function () {
       const [_owner, receiver] = await ethers.getSigners();
       const contractInstance = await factory();
 
@@ -48,7 +48,7 @@ export function shouldMintCommon(factory: () => Promise<Contract>) {
       const erc721NonReceiverInstance = await deployErc721NonReceiver();
 
       const tx = contractInstance.mintCommon(erc721NonReceiverInstance.address, templateId);
-      await expect(tx).to.be.revertedWith(`ERC721: transfer to non ERC721Receiver implementer`);
+      await expect(tx).to.be.revertedWith("ERC721: transfer to non ERC721Receiver implementer");
     });
   });
 }

@@ -2,14 +2,16 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { utils } from "ethers";
 
+import { METADATA_ROLE } from "@gemunion/contracts-constants";
+
 import { deployERC721 } from "./shared/fixtures";
 import { templateId, tokenId } from "../constants";
 
 describe("Upgradeable", function () {
-  const factory = () => deployERC721("ERC721Hardhat");
+  const factory = () => deployERC721("ERC721BlacklistUpgradeableRentableRandom");
 
   describe("earnUpgrade", function () {
-    it("earnUpgrade", async function () {
+    it("should: upgrade earn", async function () {
       const [owner, receiver] = await ethers.getSigners();
 
       const contractInstance = await factory();
@@ -30,10 +32,23 @@ describe("Upgradeable", function () {
 
       expect(value).to.equal(1);
     });
+
+    it("should fail: wrong role", async function () {
+      const [_owner, receiver] = await ethers.getSigners();
+
+      const contractInstance = await factory();
+
+      await contractInstance.mintCommon(receiver.address, templateId);
+
+      const tx = contractInstance.connect(receiver).earnUpgrade(tokenId);
+      await expect(tx).to.be.revertedWith(
+        `AccessControl: account ${receiver.address.toLowerCase()} is missing role ${METADATA_ROLE}`,
+      );
+    });
   });
 
   describe("timeUpgrade", function () {
-    it("timeUpgrade", async function () {
+    it("should: upgrade time", async function () {
       const [owner, receiver] = await ethers.getSigners();
 
       const contractInstance = await factory();
@@ -53,6 +68,19 @@ describe("Upgradeable", function () {
       );
 
       expect(value).to.equal(1);
+    });
+
+    it("should fail: wrong role", async function () {
+      const [_owner, receiver] = await ethers.getSigners();
+
+      const contractInstance = await factory();
+
+      await contractInstance.mintCommon(receiver.address, templateId);
+
+      const tx = contractInstance.connect(receiver).timeUpgrade(tokenId);
+      await expect(tx).to.be.revertedWith(
+        `AccessControl: account ${receiver.address.toLowerCase()} is missing role ${METADATA_ROLE}`,
+      );
     });
   });
 });

@@ -7,17 +7,20 @@ import { shouldMintCommon } from "./shared/mintCommon";
 import { shouldBehaveLikeERC721Simple } from "./shared/simple";
 import { deployERC721 } from "./shared/fixtures";
 import { shouldMintRandom } from "./shared/random/mintRandom";
-import { shouldBehaveLikeERC721Usable } from "./shared/user";
+import { shouldBehaveLikeERC721Rentable } from "./shared/user";
+import { shouldBehaveLikeERC721Blacklist } from "./shared/blacklist";
 
-describe("BUUR", function () {
-  const factory = () => deployERC721("ERC721Random");
+describe("ERC721BlacklistUpgradeableRentableRandom", function () {
+  const factory = () => deployERC721("ERC721BlacklistUpgradeableRentableRandom");
 
   shouldBehaveLikeAccessControl(factory)(DEFAULT_ADMIN_ROLE, MINTER_ROLE);
   shouldBehaveLikeBlackList(factory);
-  shouldBehaveLikeERC721Metadata(factory);
 
+  shouldBehaveLikeERC721Metadata(factory);
+  shouldBehaveLikeERC721Blacklist(factory);
   shouldBehaveLikeERC721Simple(factory);
-  shouldBehaveLikeERC721Usable(factory);
+  shouldBehaveLikeERC721Rentable(factory);
+
   shouldMintCommon(factory);
   shouldMintRandom(factory);
 

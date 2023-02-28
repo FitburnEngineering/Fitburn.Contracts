@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 
 // Author: TrejGun
-// Email: trejgun+gemunion@gmail.com
+// Email: trejgun@gemunion.io
 // Website: https://gemunion.io/
 
 pragma solidity ^0.8.13;
@@ -17,9 +17,5 @@ contract InterfaceIdCalculator {
     console.logBytes4(type(IERC721Simple).interfaceId);
     console.logBytes4(type(IERC721Upgradeable).interfaceId);
     console.logBytes4(type(IERC721Random).interfaceId);
-
-    console.logBytes32(keccak256("TEMPLATE_ID"));
-    console.logBytes32(keccak256("GRADE"));
-    console.logBytes32(keccak256("RARITY"));
   }
 }

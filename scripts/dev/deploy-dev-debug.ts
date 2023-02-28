@@ -1,9 +1,8 @@
 import { ethers, network } from "hardhat";
 import { constants, Contract } from "ethers";
-import { wallet } from "@gemunion/constants";
+import { wallet, baseTokenURI, MINTER_ROLE, METADATA_ROLE, royalty } from "@gemunion/contracts-constants";
 
 import { blockAwait, blockAwaitMs } from "@gemunion/contracts-utils";
-import { baseTokenURI, MINTER_ROLE, METADATA_ADMIN_ROLE, royalty } from "@gemunion/contracts-constants";
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/abstract-provider";
 
 const camelToSnakeCase = (str: string) => str.replace(/[A-Z]/g, letter => `_${letter}`);
@@ -75,12 +74,12 @@ async function main() {
   //     : "0x42699A7612A82f1d9C36148af9C77354759b210b";
   // const linkInstance = link.attach(linkAddr); // localhost BESU or GEMUNION
 
-  const vrf = await ethers.getContractFactory("VRFCoordinatorV2Mock");
+  const vrf = await ethers.getContractFactory("VRFCoordinatorMock");
   const vrfAddr =
     network.name === "besu"
-      ? "0xa50a51c09a5c451C52BB714527E1974b686D8e77"
+      ? "0xa50a51c09a5c451C52BB714527E1974b686D8e77" // vrf besu localhost
       : network.name === "gemunion"
-      ? "0xa50a51c09a5c451C52BB714527E1974b686D8e77"
+      ? "0x86c86939c631d53c6d812625bd6ccd5bf5beb774" // vrf besu gemunion
       : "0xa50a51c09a5c451C52BB714527E1974b686D8e77";
   const vrfInstance = vrf.attach(vrfAddr); // localhost BESU or GEMUNION
   // const linkInstance = link.attach("0x42699A7612A82f1d9C36148af9C77354759b210b"); // localhost BESU
@@ -134,7 +133,11 @@ async function main() {
   // const erc721RandomFactory = await ethers.getContractFactory("ERC721Gemunion");
   // const erc721RandomFactory = await ethers.getContractFactory("ERC721Random");
   const randomContractName =
-    network.name === "besu" ? "ERC721BesuV2" : network.name === "gemunion" ? "ERC721GemunionV2" : "ERC721RandomV2";
+    network.name === "besu"
+      ? "ERC721BlacklistUpgradeableRentableRandomBesu"
+      : network.name === "gemunion"
+      ? "ERC721BlacklistUpgradeableRentableRandomGemunion"
+      : "ERC721BlacklistUpgradeableRentableRandom";
 
   const erc721RandomFactory = await ethers.getContractFactory(randomContractName);
 
@@ -254,7 +257,7 @@ async function main() {
   await grantRoles(
     [contracts.erc721Random.address],
     [contracts.exchange.address, contracts.staking.address],
-    [MINTER_ROLE, METADATA_ADMIN_ROLE],
+    [MINTER_ROLE, METADATA_ROLE],
   );
 }
 

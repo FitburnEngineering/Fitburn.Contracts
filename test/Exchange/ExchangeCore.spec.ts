@@ -4,23 +4,23 @@ import { BigNumber, constants, utils } from "ethers";
 import { time } from "@openzeppelin/test-helpers";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
-import { amount, decimals, DEFAULT_ADMIN_ROLE, nonce, PAUSER_ROLE } from "@gemunion/contracts-constants";
+import { amount, DEFAULT_ADMIN_ROLE, nonce, PAUSER_ROLE } from "@gemunion/contracts-constants";
 import { shouldBehaveLikeAccessControl, shouldBehaveLikePausable } from "@gemunion/contracts-mocha";
 
-import { externalId, params, tokenId } from "../constants";
+import { externalId, params, subscriptionId, tokenId } from "../constants";
 import { wrapOneToManySignature } from "./shared/utils";
 import { deployErc20Base, deployErc721Base, deployExchangeFixture } from "./shared/fixture";
 import { deployLinkVrfFixture } from "../shared/link";
-import { LinkToken } from "../../typechain-types";
+import { VRFCoordinatorMock } from "../../typechain-types";
 
 describe("ExchangeCore", function () {
-  let linkInstance: LinkToken;
+  let vrfInstance: VRFCoordinatorMock;
 
   before(async function () {
     await network.provider.send("hardhat_reset");
 
     // https://github.com/NomicFoundation/hardhat/issues/2980
-    ({ linkInstance } = await loadFixture(function exchange() {
+    ({ vrfInstance } = await loadFixture(function exchange() {
       return deployLinkVrfFixture();
     }));
   });
@@ -38,9 +38,9 @@ describe("ExchangeCore", function () {
       const [_owner, receiver] = await ethers.getSigners();
       const { contractInstance: exchangeInstance, generateOneToManySignature } = await deployExchangeFixture();
       const erc20Instance = await deployErc20Base("ERC20Simple", exchangeInstance);
-      const erc721Instance = await deployErc721Base("ERC721Hardhat", exchangeInstance);
+      const erc721Instance = await deployErc721Base("ERC721BlacklistUpgradeableRentableRandom", exchangeInstance);
 
-      await linkInstance.transfer(erc721Instance.address, BigNumber.from("1000").mul(decimals));
+      await vrfInstance.addConsumer(subscriptionId, erc721Instance.address);
 
       const signature = await generateOneToManySignature({
         account: receiver.address,
@@ -89,9 +89,9 @@ describe("ExchangeCore", function () {
     it("should purchase, spend ETH", async function () {
       const [_owner, receiver] = await ethers.getSigners();
       const { contractInstance: exchangeInstance, generateOneToManySignature } = await deployExchangeFixture();
-      const erc721Instance = await deployErc721Base("ERC721Hardhat", exchangeInstance);
+      const erc721Instance = await deployErc721Base("ERC721BlacklistUpgradeableRentableRandom", exchangeInstance);
 
-      await linkInstance.transfer(erc721Instance.address, BigNumber.from("1000").mul(decimals));
+      await vrfInstance.addConsumer(subscriptionId, erc721Instance.address);
 
       const signature = await generateOneToManySignature({
         account: receiver.address,
@@ -139,9 +139,9 @@ describe("ExchangeCore", function () {
       const [_owner, receiver] = await ethers.getSigners();
       const { contractInstance: exchangeInstance, generateOneToManySignature } = await deployExchangeFixture();
       const erc20Instance = await deployErc20Base("ERC20Simple", exchangeInstance);
-      const erc721Instance = await deployErc721Base("ERC721Hardhat", exchangeInstance);
+      const erc721Instance = await deployErc721Base("ERC721BlacklistUpgradeableRentableRandom", exchangeInstance);
 
-      await linkInstance.transfer(erc721Instance.address, BigNumber.from("1000").mul(decimals));
+      await vrfInstance.addConsumer(subscriptionId, erc721Instance.address);
 
       const signature = await generateOneToManySignature({
         account: receiver.address,
@@ -211,7 +211,7 @@ describe("ExchangeCore", function () {
       const [_owner, receiver, stranger] = await ethers.getSigners();
       const { contractInstance: exchangeInstance } = await deployExchangeFixture();
       const erc20Instance = await deployErc20Base("ERC20Simple", exchangeInstance);
-      const erc721Instance = await deployErc721Base("ERC721Hardhat", exchangeInstance);
+      const erc721Instance = await deployErc721Base("ERC721BlacklistUpgradeableRentableRandom", exchangeInstance);
 
       const network = await ethers.provider.getNetwork();
       const generateOneToManySignature = wrapOneToManySignature(network, exchangeInstance, stranger);
@@ -261,7 +261,7 @@ describe("ExchangeCore", function () {
       const [_owner, receiver] = await ethers.getSigners();
       const { contractInstance: exchangeInstance, generateOneToManySignature } = await deployExchangeFixture();
       const erc20Instance = await deployErc20Base("ERC20Simple", exchangeInstance);
-      const erc721Instance = await deployErc721Base("ERC721Hardhat", exchangeInstance);
+      const erc721Instance = await deployErc721Base("ERC721BlacklistUpgradeableRentableRandom", exchangeInstance);
 
       const signature = await generateOneToManySignature({
         account: receiver.address,
@@ -308,7 +308,7 @@ describe("ExchangeCore", function () {
     it("should fail: wrong signature", async function () {
       const { contractInstance: exchangeInstance } = await deployExchangeFixture();
       const erc20Instance = await deployErc20Base("ERC20Simple", exchangeInstance);
-      const erc721Instance = await deployErc721Base("ERC721Hardhat", exchangeInstance);
+      const erc721Instance = await deployErc721Base("ERC721BlacklistUpgradeableRentableRandom", exchangeInstance);
 
       const tx = exchangeInstance.purchase(
         params,
@@ -336,7 +336,7 @@ describe("ExchangeCore", function () {
       const [_owner, receiver] = await ethers.getSigners();
       const { contractInstance: exchangeInstance, generateOneToManySignature } = await deployExchangeFixture();
       const erc20Instance = await deployErc20Base("ERC20Simple", exchangeInstance);
-      const erc721Instance = await deployErc721Base("ERC721Hardhat", exchangeInstance);
+      const erc721Instance = await deployErc721Base("ERC721BlacklistUpgradeableRentableRandom", exchangeInstance);
 
       const expiresAt = (await time.latest()).toString();
       const params = {

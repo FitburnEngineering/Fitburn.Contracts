@@ -1,12 +1,13 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-import { shouldBehaveLikeOwnable } from "@gemunion/contracts-mocha";
-import { tokenName, tokenSymbol } from "@gemunion/contracts-constants";
+import { shouldBehaveLikeOwnable, shouldSupportsInterface } from "@gemunion/contracts-mocha";
+import { InterfaceId } from "@gemunion/contracts-constants";
 
 import { deployVesting } from "./shared/fixture";
 import { amount } from "../../constants";
 import { calc } from "./shared/calc";
+import { deployERC20 } from "../../ERC20/shared/fixtures";
 
 describe("Vesting", function () {
   const factory = () => deployVesting("TeamVesting");
@@ -18,8 +19,7 @@ describe("Vesting", function () {
       const [owner] = await ethers.getSigners();
       const vestingInstance = await deployVesting("TeamVesting");
 
-      const erc20Factory = await ethers.getContractFactory("ERC20Simple");
-      const erc20Instance = await erc20Factory.deploy(tokenName, tokenSymbol, amount);
+      const erc20Instance = await deployERC20(void 0, { amount });
       await erc20Instance.mint(owner.address, amount);
 
       await erc20Instance.approve(vestingInstance.address, amount);
@@ -74,4 +74,6 @@ describe("Vesting", function () {
       await calc("TeamVesting", 13698, 12);
     });
   });
+
+  shouldSupportsInterface(factory)(InterfaceId.IERC165, InterfaceId.IERC1363Receiver);
 });

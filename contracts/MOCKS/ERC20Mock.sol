@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 
 // Author: TrejGun
-// Email: trejgun+gemunion@gmail.com
+// Email: trejgun@gemunion.io
 // Website: https://gemunion.io/
 
 pragma solidity ^0.8.13;
@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-import "../utils/constants.sol";
+import "@gemunion/contracts-misc/contracts/constants.sol";
 
 contract ERC20Mock is AccessControl, ERC20, ERC20Capped {
   constructor(string memory name, string memory symbol, uint256 cap) ERC20(name, symbol) ERC20Capped(cap) {

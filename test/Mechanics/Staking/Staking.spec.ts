@@ -1,15 +1,15 @@
 import { expect, use } from "chai";
 import { solidity } from "ethereum-waffle";
 import { ethers, network, waffle, web3 } from "hardhat";
-import { BigNumber, constants, utils } from "ethers";
+import { constants, utils } from "ethers";
 import { time } from "@openzeppelin/test-helpers";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 import { shouldBehaveLikeAccessControl, shouldBehaveLikePausable } from "@gemunion/contracts-mocha";
-import { amount, decimals, DEFAULT_ADMIN_ROLE, MINTER_ROLE, PAUSER_ROLE } from "@gemunion/contracts-constants";
+import { amount, DEFAULT_ADMIN_ROLE, MINTER_ROLE, PAUSER_ROLE } from "@gemunion/contracts-constants";
 
-import { LinkToken, VRFCoordinatorMock } from "../../../typechain-types";
-import { templateId } from "../../constants";
+import { VRFCoordinatorMock } from "../../../typechain-types";
+import { subscriptionId, templateId } from "../../constants";
 import { IRule } from "./interface/staking";
 import { randomRequest } from "../../shared/randomRequest";
 import { deployLinkVrfFixture } from "../../shared/link";
@@ -27,7 +27,6 @@ describe("Staking", function () {
   // TODO use @types
   const templateKey = "0xe2db241bb2fe321e8c078a17b0902f9429cee78d5f3486725d73d0356e97c842";
 
-  let linkInstance: LinkToken;
   let vrfInstance: VRFCoordinatorMock;
 
   const factory = () => deployStaking();
@@ -41,7 +40,7 @@ describe("Staking", function () {
     await network.provider.send("hardhat_reset");
 
     // https://github.com/NomicFoundation/hardhat/issues/2980
-    ({ linkInstance, vrfInstance } = await loadFixture(function staking() {
+    ({ vrfInstance } = await loadFixture(function staking() {
       return deployLinkVrfFixture();
     }));
   });
@@ -55,7 +54,7 @@ describe("Staking", function () {
       const [_owner, receiver] = await ethers.getSigners();
 
       const stakingInstance = await factory();
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721RandomInstance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
       const stakeRule: IRule = {
         externalId: 1,
@@ -87,7 +86,7 @@ describe("Staking", function () {
 
     it("should fail edit when Rule not exist", async function () {
       const stakingInstance = await factory();
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721RandomInstance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
       const stakeRule: IRule = {
         externalId: 1,
@@ -119,7 +118,7 @@ describe("Staking", function () {
 
     it("should set one Rule", async function () {
       const stakingInstance = await factory();
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721RandomInstance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
       const stakeRule: IRule = {
         externalId: 1,
@@ -149,7 +148,7 @@ describe("Staking", function () {
     it("should set multiple Rules", async function () {
       const stakingInstance = await factory();
       const erc721SimpleInstance = await erc721Factory("ERC721Simple");
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721RandomInstance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
       const stakeRule1: IRule = {
         externalId: 1,
@@ -207,7 +206,7 @@ describe("Staking", function () {
 
     it("should edit Rule", async function () {
       const stakingInstance = await factory();
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721RandomInstance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
       const stakeRule: IRule = {
         externalId: 1,
@@ -241,7 +240,7 @@ describe("Staking", function () {
   describe("Stake", function () {
     it("should fail for not existing rule", async function () {
       const stakingInstance = await factory();
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721RandomInstance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
       const stakeRule: IRule = {
         externalId: 1,
@@ -273,7 +272,7 @@ describe("Staking", function () {
 
     it("should fail for not active rule", async function () {
       const stakingInstance = await factory();
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721RandomInstance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
       const stakeRule: IRule = {
         externalId: 1,
@@ -305,7 +304,7 @@ describe("Staking", function () {
 
     it("should fail for wrong pay amount", async function () {
       const stakingInstance = await factory();
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721RandomInstance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
       const stakeRule: IRule = {
         externalId: 1,
@@ -337,7 +336,7 @@ describe("Staking", function () {
 
     it("should fail for limit exceed", async function () {
       const stakingInstance = await factory();
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721RandomInstance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
       await stakingInstance.setMaxStake(1);
 
@@ -514,7 +513,7 @@ describe("Staking", function () {
       const [owner] = await ethers.getSigners();
 
       const stakingInstance = await factory();
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721RandomInstance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
       const stakeRule: IRule = {
         externalId: 1,
@@ -614,12 +613,12 @@ describe("Staking", function () {
 
       const stakingInstance = await factory();
       const erc20Instance = await erc20Factory();
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721Instance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
-      await erc721RandomInstance.grantRole(MINTER_ROLE, vrfInstance.address);
-      await erc721RandomInstance.grantRole(MINTER_ROLE, stakingInstance.address);
+      await erc721Instance.grantRole(MINTER_ROLE, vrfInstance.address);
+      await erc721Instance.grantRole(MINTER_ROLE, stakingInstance.address);
 
-      await linkInstance.transfer(erc721RandomInstance.address, BigNumber.from("1000").mul(decimals));
+      await vrfInstance.addConsumer(subscriptionId, erc721Instance.address);
 
       const stakeRule: IRule = {
         externalId: 1,
@@ -631,7 +630,7 @@ describe("Staking", function () {
         },
         reward: {
           tokenType: 2, // ERC721
-          token: erc721RandomInstance.address,
+          token: erc721Instance.address,
           tokenId: 1,
           amount: 0,
         },
@@ -660,14 +659,11 @@ describe("Staking", function () {
       await time.advanceBlockTo(current.add(web3.utils.toBN(period * cycles)));
       // REWARD
       const tx2 = await stakingInstance.receiveReward(1, true, true);
-      await expect(tx2).to.emit(stakingInstance, "StakingWithdraw");
-      await expect(tx2).to.emit(stakingInstance, "StakingFinish");
-      await expect(tx2)
-        .to.emit(linkInstance, "Transfer(address,address,uint256)")
-        .withArgs(erc721RandomInstance.address, vrfInstance.address, utils.parseEther("0.1"));
+      await expect(tx2).to.emit(stakingInstance, "StakingWithdraw").emit(stakingInstance, "StakingFinish");
+
       // RANDOM
-      await randomRequest(erc721RandomInstance, vrfInstance);
-      balance = await erc721RandomInstance.balanceOf(owner.address);
+      await randomRequest(erc721Instance, vrfInstance);
+      balance = await erc721Instance.balanceOf(owner.address);
       expect(balance).to.equal(cycles);
       balance = await erc20Instance.balanceOf(owner.address);
       expect(balance).to.equal(amount);
@@ -735,7 +731,7 @@ describe("Staking", function () {
 
       const stakingInstance = await factory();
       const erc20Instance = await erc20Factory();
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721RandomInstance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
       const stakeRule: IRule = {
         externalId: 1,
@@ -788,24 +784,24 @@ describe("Staking", function () {
       const [owner] = await ethers.getSigners();
 
       const stakingInstance = await factory();
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721Instance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
-      await erc721RandomInstance.grantRole(MINTER_ROLE, vrfInstance.address);
-      await erc721RandomInstance.grantRole(MINTER_ROLE, stakingInstance.address);
+      await erc721Instance.grantRole(MINTER_ROLE, vrfInstance.address);
+      await erc721Instance.grantRole(MINTER_ROLE, stakingInstance.address);
 
-      await linkInstance.transfer(erc721RandomInstance.address, BigNumber.from("1000").mul(decimals));
+      await vrfInstance.addConsumer(subscriptionId, erc721Instance.address);
 
       const stakeRule: IRule = {
         externalId: 1,
         deposit: {
           tokenType: 2, // ERC721
-          token: erc721RandomInstance.address,
+          token: erc721Instance.address,
           tokenId: 1,
           amount: 0,
         },
         reward: {
           tokenType: 2, // ERC721
-          token: erc721RandomInstance.address,
+          token: erc721Instance.address,
           tokenId: 1,
           amount: 0,
         },
@@ -820,27 +816,23 @@ describe("Staking", function () {
       const tx = stakingInstance.setRules([stakeRule]);
       await expect(tx).to.emit(stakingInstance, "RuleCreated");
       // STAKE
-      await erc721RandomInstance.mintCommon(owner.address, templateId);
-      let balance = await erc721RandomInstance.balanceOf(owner.address);
+      await erc721Instance.mintCommon(owner.address, templateId);
+      let balance = await erc721Instance.balanceOf(owner.address);
       expect(balance).to.equal(1);
-      await erc721RandomInstance.approve(stakingInstance.address, 1);
+      await erc721Instance.approve(stakingInstance.address, 1);
       const tx1 = stakingInstance.deposit(1, 1);
-      await expect(tx1).to.emit(stakingInstance, "StakingStart").to.emit(erc721RandomInstance, "Transfer");
-      balance = await erc721RandomInstance.balanceOf(owner.address);
+      await expect(tx1).to.emit(stakingInstance, "StakingStart").to.emit(erc721Instance, "Transfer");
+      balance = await erc721Instance.balanceOf(owner.address);
       expect(balance).to.equal(0);
       // TIME
       const current = await time.latestBlock();
       await time.advanceBlockTo(current.add(web3.utils.toBN(period * cycles)));
       // REWARD
       const tx2 = await stakingInstance.receiveReward(1, true, true);
-      await expect(tx2)
-        .to.emit(stakingInstance, "StakingWithdraw")
-        .to.emit(stakingInstance, "StakingFinish")
-        .to.emit(linkInstance, "Transfer(address,address,uint256)")
-        .withArgs(erc721RandomInstance.address, vrfInstance.address, utils.parseEther("0.1"));
+      await expect(tx2).to.emit(stakingInstance, "StakingWithdraw").to.emit(stakingInstance, "StakingFinish");
       // RANDOM
-      await randomRequest(erc721RandomInstance, vrfInstance);
-      balance = await erc721RandomInstance.balanceOf(owner.address);
+      await randomRequest(erc721Instance, vrfInstance);
+      balance = await erc721Instance.balanceOf(owner.address);
       expect(balance).to.equal(cycles + 1);
     });
 
@@ -849,7 +841,7 @@ describe("Staking", function () {
 
       const stakingInstance = await factory();
       const erc721SimpleInstance = await erc721Factory("ERC721Simple");
-      const erc721RandomInstance = await erc721Factory("ERC721Random");
+      const erc721RandomInstance = await erc721Factory("ERC721BlacklistUpgradeableRentableRandom");
 
       await erc721SimpleInstance.grantRole(MINTER_ROLE, stakingInstance.address);
 

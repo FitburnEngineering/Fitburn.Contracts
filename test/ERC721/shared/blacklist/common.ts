@@ -2,9 +2,9 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { Contract } from "ethers";
 
-import { templateId, tokenId } from "../../constants";
+import { templateId, tokenId } from "../../../constants";
 
-export function shouldBehaveLikeERC721B(factory: () => Promise<Contract>) {
+export function shouldBehaveLikeERC721BlacklistCommon(factory: () => Promise<Contract>) {
   describe("Black list", function () {
     it("should fail: transferFrom from", async function () {
       const [owner, receiver] = await ethers.getSigners();

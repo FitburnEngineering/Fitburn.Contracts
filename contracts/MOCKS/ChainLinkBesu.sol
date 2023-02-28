@@ -1,21 +1,28 @@
 // SPDX-License-Identifier: UNLICENSED
 
 // Author: TrejGun
-// Email: trejgun+gemunion@gmail.com
+// Email: trejgun@gemunion.io
 // Website: https://gemunion.io/
 
 pragma solidity ^0.8.13;
 
-import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
-import "@gemunion/contracts-chain-link/contracts/extensions/ChainLinkBase.sol";
+import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import "@gemunion/contracts-chain-link-v2/contracts/extensions/ChainLinkBase.sol";
 
 abstract contract ChainLinkBesu is ChainLinkBase {
-  constructor()
+  constructor(
+    uint64 subId,
+    uint16 minReqConfs,
+    uint32 callbackGasLimit,
+    uint32 numWords
+  )
     ChainLinkBase(
-      address(0xa50a51c09a5c451C52BB714527E1974b686D8e77), // vrfCoordinator
-      address(0x42699A7612A82f1d9C36148af9C77354759b210b), // LINK token
-      0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311, // system hash
-      0.01 ether // fee
+      address(0xa50a51c09a5c451C52BB714527E1974b686D8e77), // besu vrfCoordinatorV2
+      0xcaf3c3727e033261d383b315559476f48034c13b18f8cafed4d871abe5049186, // keyHash
+      subId,
+      minReqConfs,
+      callbackGasLimit,
+      numWords
     )
   {}
 }

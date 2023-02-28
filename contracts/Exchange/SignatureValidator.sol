@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 
 // Author: TrejGun
-// Email: trejgun+gemunion@gmail.com
+// Email: trejgun@gemunion.io
 // Website: https://gemunion.io/
 
 pragma solidity ^0.8.13;
@@ -46,57 +46,99 @@ contract SignatureValidator is EIP712, Context {
 
   constructor(string memory name) EIP712(name, "1.0.0") {}
 
+  /**
+   * @dev Recovers the signer of a one-to-one signature.
+   * @dev Checks that the signature is not expired and matches passed parameters.
+   *
+   * @param params Struct of Params that containing the signature parameters.
+   * @param item Struct of Asset that will be purchased/upgraded/claimed...
+   * @param price Struct of Asset that will be used as payment.
+   * @param signature The signature to be verified.
+   * @return address of the signer.
+   */
   function _recoverOneToOneSignature(
     Params memory params,
     Asset memory item,
     Asset memory price,
     bytes calldata signature
   ) internal returns (address) {
+    // Check that the transaction with the same nonce was not executed yet
     require(!_expired[params.nonce], "Exchange: Expired signature");
+    // Mark the transaction as executed.
     _expired[params.nonce] = true;
 
+    // If the signature has an expiration time
     if (params.expiresAt != 0) {
+      // Check that it has not expired.
       require(block.timestamp <= params.expiresAt, "Exchange: Expired signature");
     }
 
     address account = _msgSender();
-
+    // Get the signer of the message hash
     return _recoverSigner(_hashOneToOne(account, params, item, price), signature);
   }
 
+  /**
+   * @dev Recovers the signer of a one-to-many signature.
+   * @dev Checks that the signature is not expired and matches passed parameters.
+   *
+   * @param params struct of Params that containing the signature parameters.
+   * @param item struct of Asset that will be purchased/upgraded/claimed...
+   * @param price array of Asset structs that will be used as payment.
+   * @param signature The signature to be verified.
+   * @return address of the signer.
+   */
   function _recoverOneToManySignature(
     Params memory params,
     Asset memory item,
     Asset[] memory price,
     bytes calldata signature
   ) internal returns (address) {
+    // Check that the transaction with the same nonce was not executed yet
     require(!_expired[params.nonce], "Exchange: Expired signature");
+    // Mark the transaction as executed.
     _expired[params.nonce] = true;
 
+    // If the signature has an expiration time
     if (params.expiresAt != 0) {
+      // Check that it has not expired.
       require(block.timestamp <= params.expiresAt, "Exchange: Expired signature");
     }
 
     address account = _msgSender();
-
+    // Get the signer of the message hash
     return _recoverSigner(_hashOneToMany(account, params, item, price), signature);
   }
 
+  /**
+   * @dev Recovers the signer of a many-to-many signature.
+   * @dev Checks that the signature is not expired and matches passed parameters.
+   *
+   * @param params struct of Params that containing the signature parameters.
+   * @param items array of Asset structs that will be purchased/upgraded/claimed...
+   * @param price array of Asset structs that will be used as payment.
+   * @param signature The signature to be verified.
+   * @return address of the signer.
+   */
   function _recoverManyToManySignature(
     Params memory params,
     Asset[] memory items,
     Asset[] memory price,
     bytes calldata signature
   ) internal returns (address) {
+    // Check that the transaction with the same nonce was not executed yet
     require(!_expired[params.nonce], "Exchange: Expired signature");
+    // Mark the transaction as executed.
     _expired[params.nonce] = true;
 
+    // If the signature has an expiration time
     if (params.expiresAt != 0) {
+      // Check that it has not expired.
       require(block.timestamp <= params.expiresAt, "Exchange: Expired signature");
     }
 
     address account = _msgSender();
-
+    // Get the signer of the message hash
     return _recoverSigner(_hashManyToMany(account, params, items, price), signature);
   }
 
@@ -104,6 +146,15 @@ contract SignatureValidator is EIP712, Context {
     return digest.recover(signature);
   }
 
+  /**
+   * @dev Computes the hash of the one-to-one signature message using EIP-712 typed data hashing.
+   *
+   * @param account The address of the signer.
+   * @param params struct of Params that containing the signature parameters.
+   * @param item struct of Asset that will be purchased/upgraded/claimed...
+   * @param price struct of Asset that will be used as payment.
+   * @return bytes32 hash of the signature message.
+   */
   function _hashOneToOne(
     address account,
     Params memory params,
@@ -124,6 +175,15 @@ contract SignatureValidator is EIP712, Context {
       );
   }
 
+  /**
+   * @dev Computes the hash of the one-to-many signature message using EIP-712 typed data hashing.
+   *
+   * @param account The address of the signer.
+   * @param params struct of Params that containing the signature parameters.
+   * @param item struct of Asset that will be purchased/upgraded/claimed...
+   * @param price array of Asset structs that will be used as payment.
+   * @return bytes32 hash of the signature message.
+   */
   function _hashOneToMany(
     address account,
     Params memory params,
@@ -144,6 +204,15 @@ contract SignatureValidator is EIP712, Context {
       );
   }
 
+  /**
+   * @dev Computes the hash of the many-to-many signature message using EIP-712 typed data hashing.
+   *
+   * @param account The address of the signer.
+   * @param params struct of Params that containing the signature parameters.
+   * @param items array of Asset structs that will be purchased/upgraded/claimed...
+   * @param price array of Asset structs that will be used as payment.
+   * @return bytes32 hash of the signature message.
+   */
   function _hashManyToMany(
     address account,
     Params memory params,
@@ -164,14 +233,32 @@ contract SignatureValidator is EIP712, Context {
       );
   }
 
+  /**
+   * @dev Computes the hash of Params struct using EIP-712 typed data hashing.
+   *
+   * @param params Struct of Params that containing the signature parameters.
+   * @return betys32 hash of Params struct.
+   */
   function _hashParamsStruct(Params memory params) private pure returns (bytes32) {
     return keccak256(abi.encode(PARAMS_TYPEHASH, params.nonce, params.externalId, params.expiresAt, params.referrer));
   }
 
+  /**
+   * @dev Computes the hash of Asset struct using EIP-712 typed data hashing.
+   *
+   * @param item Struct of Asset that will be purchased/upgraded/claimed....
+   * @return bytes32 hash of Asset struct.
+   */
   function _hashAssetStruct(Asset memory item) private pure returns (bytes32) {
     return keccak256(abi.encode(ASSET_TYPEHASH, item.tokenType, item.token, item.tokenId, item.amount));
   }
 
+  /**
+   * @dev Computes the hash of an array of Asset structs using EIP-712 typed data hashing.
+   *
+   * @param items Array of Asset structs that will be purchased/upgraded/claimed....
+   * @return bytes32 hash of an array of Asset structs.
+   */
   function _hashAssetStructArray(Asset[] memory items) private pure returns (bytes32) {
     uint256 length = items.length;
     bytes32[] memory padded = new bytes32[](length);

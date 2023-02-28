@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 
 // Author: TrejGun
-// Email: trejgun+gemunion@gmail.com
+// Email: trejgun@gemunion.io
 // Website: https://gemunion.io/
 
 pragma solidity ^0.8.13;
@@ -19,6 +19,7 @@ import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 import "@gemunion/contracts-erc20/contracts/extensions/ERC1363Receiver.sol";
 import "@gemunion/contracts-erc20/contracts/interfaces/IERC1363.sol";
+import "@gemunion/contracts-misc/contracts/constants.sol";
 
 import "./interfaces/IStaking.sol";
 import "../../utils/constants.sol";
@@ -191,14 +192,23 @@ contract Staking is IStaking, AccessControl, Pausable, ERC1155Holder, ERC721Hold
     return (finishTimestamp - startTimestamp) / period;
   }
 
+  /**
+   * @dev Pauses the contract.
+   */
   function pause() public onlyRole(PAUSER_ROLE) {
     _pause();
   }
 
+  /**
+   * @dev Unpauses the contract.
+   */
   function unpause() public onlyRole(PAUSER_ROLE) {
     _unpause();
   }
 
+  /**
+   * @dev See {IERC165-supportsInterface}.
+   */
   function supportsInterface(
     bytes4 interfaceId
   ) public view virtual override(AccessControl, ERC1155Receiver) returns (bool) {

@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 
-// import { blockAwait } from "@gemunion/utils-eth";
+// import { blockAwait } from "@gemunion/contracts-utils";
 // import { baseTokenURI } from "@gemunion/contracts-constants";
 
 async function main() {

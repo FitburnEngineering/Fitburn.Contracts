@@ -1,17 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
 
 // Author: TrejGun
-// Email: trejgun+gemunion@gmail.com
+// Email: trejgun@gemunion.io
 // Website: https://gemunion.io/
 
 pragma solidity ^0.8.13;
 
-import "./AbstractVestingDaily.sol";
+import "./AbstractVesting.sol";
 
-contract PrivateSaleVesting is AbstractVestingDaily {
-  constructor(
-    address account,
-    uint64 startTimestamp,
-    uint64
-  ) AbstractVestingDaily(account, startTimestamp, 1 * 30, 18915) {}
+/**
+ * @dev Contract for vesting tokens to the investors in private sale round
+ */
+contract PrivateSaleVesting is AbstractVesting {
+  constructor(address account, uint64 startTimestamp, uint64) AbstractVesting(account, startTimestamp, 1 * 30, 18915) {}
 }

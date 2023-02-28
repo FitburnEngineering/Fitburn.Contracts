@@ -19,11 +19,12 @@ describe("ERC721Factory", function () {
 
   describe("deployERC721Token", function () {
     it("should deploy contract", async function () {
-      const [owner, receiver] = await ethers.getSigners();
+      const [owner, receiver, stranger] = await ethers.getSigners();
       const network = await ethers.provider.getNetwork();
-      const erc721 = await ethers.getContractFactory("ERC721Hardhat");
+      const erc721 = await ethers.getContractFactory("ERC721BlacklistUpgradeableRentableRandomHardhat");
 
       const contractInstance = await factory();
+      await contractInstance.setFactories([stranger.address], [stranger.address]);
 
       const signature = await owner._signTypedData(
         // Domain
@@ -83,10 +84,6 @@ describe("ERC721Factory", function () {
       );
 
       const [address] = await contractInstance.allERC721Tokens();
-
-      // await expect(tx)
-      //   .to.emit(contractInstance, "ERC721TokenDeployed")
-      //   .withArgs(address, tokenName, tokenSymbol, royalty, baseTokenURI, contractTemplate);
 
       await expect(tx)
         .to.emit(contractInstance, "ERC721TokenDeployed")

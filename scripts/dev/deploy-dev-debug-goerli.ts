@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 import { Contract } from "ethers";
 
-// import { wallet, wallets } from "@gemunion/constants";
+// import { wallet, wallets } from "@gemunion/contracts-constants";
 import { blockAwait, blockAwaitMs } from "@gemunion/contracts-utils";
 import { MINTER_ROLE } from "@gemunion/contracts-constants";
 

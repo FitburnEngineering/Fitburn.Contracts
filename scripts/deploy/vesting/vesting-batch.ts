@@ -93,7 +93,7 @@ async function main() {
           ? "SeedSaleVesting"
           : vesting.contractTemplate === "TEAM"
           ? "TeamVesting"
-          : "AbstractVestingDaily";
+          : "AbstractVesting";
 
       const vestingAmount = BigNumber.from(vesting.amount);
 

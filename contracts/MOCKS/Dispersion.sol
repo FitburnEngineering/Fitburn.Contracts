@@ -6,12 +6,10 @@
 
 pragma solidity ^0.8.13;
 
-import "hardhat/console.sol";
-
 import "../Mechanics/Rarity/Rarity.sol";
 
 contract Dispersion is Rarity {
-  function getDispersion(uint256 randomness) external pure virtual returns (uint256) {
-    return _getDispersion(randomness);
+  function getDispersion(uint256 randomness) external pure virtual returns (uint8) {
+    return _getRarity(randomness);
   }
 }

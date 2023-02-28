@@ -2,7 +2,7 @@
 
 ### Usage
 
-Install dependencies 
+Install dependencies
 ```sh
 npm i
 ```

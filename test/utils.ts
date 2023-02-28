@@ -1,5 +1,5 @@
-import { snakeToCamelCase } from "@gemunion/utils";
+import { snakeToCamelCase } from "@gemunion/contracts-utils";
 
 export const getContractName = (base: string, network: string) => {
-  return snakeToCamelCase(base.replace("Random", `_${network}`));
+  return base.endsWith("Random") ? snakeToCamelCase(`${base}_${network}`) : base;
 };

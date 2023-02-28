@@ -25,6 +25,6 @@ export const params = {
 };
 
 export const amount = 10000000;
-export const batchSize = 1000;
 
 export const contractTemplate = "SIMPLE";
+export const subscriptionId = 1;
